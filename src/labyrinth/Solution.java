@@ -6,22 +6,23 @@ public class Solution {
 
 	public static void main(String args[]) {
 		Scanner in = new Scanner(System.in);
-		int rows = in.nextInt();
-		int columns = in.nextInt();
-		int alarmCountdown = in.nextInt();
+		int rows = in.nextInt(); // number of rows.
+		int columns = in.nextInt(); // number of columns.
+		int A = in.nextInt(); // number of rounds between the time the alarm countdown is activated and the
+								// time the alarm goes off.
 
+		Labyrinth labyrinth = null;
+		boolean controlRoomFound = false;
 		boolean wayBackFound = false;
 		boolean alarmTriggered = false;
-		boolean controlRoomFound = false;
-		Position controlRoomPosition = null;
-		Labyrinth labyrinth = null;
 		Direction direction = null;
-		
+
 		// game loop
 		while (true) {
 			int kirkY = in.nextInt(); // row where Kirk is located.
 			int kirkX = in.nextInt(); // column where Kirk is located.
 			Position kirkPosition = new Position(kirkX, kirkY);
+			Position controlRoomPosition = null;
 
 			char[][] labyrinthAsCharArray = new char[rows][columns];
 			for (int i = 0; i < rows; i++) {
@@ -35,18 +36,19 @@ public class Solution {
 				}
 			}
 
+			if (labyrinthAsCharArray[kirkPosition.y][kirkPosition.x] == 'C') {
+				alarmTriggered = true;
+			}
+
 			if (labyrinth == null) {
 				labyrinth = new Labyrinth(labyrinthAsCharArray, rows, columns);
 			} else {
 				labyrinth.discoverNewCells(labyrinthAsCharArray, direction, kirkPosition);
 			}
 
-			if (labyrinth.getCellAt(kirkPosition).type == CellType.CONTROL_ROOM) {
-				alarmTriggered = true;
-			}
 			if (controlRoomFound && !wayBackFound) {
 				int turnCount = labyrinth.computeFastestWayTo(controlRoomPosition, CellType.START);
-				if(turnCount != -1 && turnCount <= alarmCountdown) {
+				if (turnCount != -1 && turnCount <= A) {
 					wayBackFound = true;
 				}
 			}
@@ -59,12 +61,11 @@ public class Solution {
 			} else {
 				targetType = CellType.UNKNOWN;
 			}
-
-			Cell nextCell = labyrinth.findNextCellLeadingTo(kirkPosition, targetType);
+			boolean ignoreUnknownCases = (targetType != CellType.UNKNOWN);
+			Cell nextCell = labyrinth.findNextCellLeadingTo(kirkPosition, targetType, ignoreUnknownCases);
 			direction = kirkPosition.computeDirectionTo(nextCell.position);
 
 			System.out.println(direction);
-			break;
 		}
 	}
 }
